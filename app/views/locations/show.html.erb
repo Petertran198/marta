@@ -1,0 +1,77 @@
+<p id="notice"><%= notice %></p>
+<h2> You are standing At.... </h2>
+<p>
+  <%= @location.my_location %>
+</p>
+<h2>The closest Buses Are....</h2>
+<% if @bus_count == 0 %> <!-- If there is no bus nearby -->
+  <p>
+    ..not really that close. Better order an Uber, or Lyft, call a friend, or just go in and watch TV. Going places are overrated.
+  </p>
+<% else %> <!-- if there is one nearby -->
+    <% @nearby_buses.each_with_index do |bus, index| %>
+    <p>
+      <strong>Route Number: <%= bus["ROUTE"] %></strong><br>
+      <strong>Vechicle: <%= bus["VEHICLE"] %></strong><br>
+      <strong>Next Stop: <%= bus["TIMEPOINT"] %></strong><br>
+      <strong>Directions <%= bus["DIRECTION"] %></strong><br>
+      
+    </p>
+    <div class="map-size" id="map<%= index %>"></div>
+    <script>
+      function initialize(){
+        var userCoords = new google.maps.LatLng(<%= @location.latitude %>, <%= @location.longitude %>);
+        var busCoords = new google.maps.LatLng(<%= bus["LATITUDE"] %>, <%= bus["LONGITUDE"] %>);
+        var mapOptions = {
+          zoom: 13,
+          center: userCoords
+        };
+
+        var map = new google.maps.Map(document.getElementById('map<%= index %>'),
+            mapOptions);  
+            
+        var busMarker = new google.maps.Marker({
+          position: busCoords,
+          map: map
+        });
+
+        var contentStringBus = "<strong>Your bus is here</strong>";
+
+        var infoWindowBus = new google.maps.InfoWindow({
+          content: contentStringBus
+        });        
+
+        busMarker.addListener('click', function() {
+          infoWindowBus.open(map, busMarker);
+        });
+
+
+        var userMarker = new google.maps.Marker({
+          position: userCoords,
+          map: map
+        });
+
+        var contentStringUser = "Me";
+
+        var infoWindowUser = new google.maps.InfoWindow({
+          content: contentStringUser
+        });        
+
+        userMarker.addListener('click', function() {
+          infoWindowUser.open(map, userMarker);
+        });
+
+      }//End of function
+
+    google.maps.event.addDomListener(window, 'load', initialize)
+    </script>
+    <hr>
+    <% end %>
+<% end %>
+
+
+
+
+
+<%= link_to 'Edit', edit_location_path(@location) %> |
+<%= link_to 'Back', locations_path %>
